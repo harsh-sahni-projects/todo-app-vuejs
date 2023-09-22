@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+	<script src="https://unpkg.com/vue@next"></script>
+</head>
+<style>
+* {
+	margin: 0;
+	padding:0;
+	box-sizing: border-box;
+}
+body {
+	background-color:#ffe3bd;
+}
+h1 {
+	text-align: center;
+	padding: 2rem;
+	background-color: royalblue;
+	color: white;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+#inputDiv {
+	padding: 2rem;
+}
+#taskInput {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 1rem;
+	font-size: 1.2rem;
+	outline: none;
+	border: 1px solid cornflowerblue;
+	border-radius: 5px;
+}
+ul {
+	padding: 2rem;
+	list-style: none;
+}
+.deleteBtn, .doneBtn {
+	cursor: pointer;
+	color: royalblue;
+	padding: 0.5rem;
+}
+li {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.5rem 1rem;
+	border: 1px solid #fcca80;
+	background-color:#fff6eb;
+	border-radius: 6px;
+	margin-bottom: 1rem;
+	box-shadow: 3px 3px 10px -6px black;
+	transition: all 0.3s ease-in-out;
+}
+.actionBtnCont {
+	min-width:fit-content
+}
+li:hover {
+	transform: scale(1.02);
+	box-shadow: 3px 3px 10px -5px black;
+}
+li.completed {
+	text-decoration: line-through;
+	border-color: lightgrey;
+	background-color: #fefefe;
+	color: lightgray;
+}
+li.completed i {
+	color: lightgrey;
+}
+li.completed i:hover {
+	color: lightgrey;
+	background-color: #f6f6f6;
+}
+
+i:hover {
+	background-color: #e6edff;
+	border-radius: 50%;
+}
+
+
+
+</style>
+
+<body>
+	<div id="app">
+		<h1>{{heading}}</h1>
+		<div id="inputDiv">
+			<input
+				type="text"
+				v-model="taskInput"
+				id="taskInput"
+				@keyup.enter="addTask" 
+				placeholder="Add task and hit Enter!"/>
+		</div>
+		<ul v-if="allTasks.length > 0">
+			<task-items
+				:tasks="allTasks"
+				@remove-task="removeTask"
+				@toggle-done="toggleDone">
+			</task-items>
+		</ul>
+	</div>	
+</body>
+<script>
+const app = Vue.createApp({
+	data() {
+		return {
+			taskInput: '',
+			allTasks: [
+				{description:'This is sample task', isDone:false},
+				{description:'You can mark tasks as done', isDone:false},
+				{description:'And you can also delete tasks', isDone:false}
+			],
+			heading: 'Tasks!'
+		}
+	},
+	methods: {
+		removeTask(index) {
+			this.allTasks.splice(index,1);
+		},
+		addTask() {
+			if (this.taskInput.trim().length == 0) return;
+			this.allTasks.push({
+				description: this.taskInput,
+				isDone: false
+			})
+			this.taskInput = ''
+		},
+		toggleDone(index) {
+			this.allTasks[index].isDone = !this.allTasks[index].isDone;
+		}
+	}
+});
+
+app.component('task-items', {
+	emits: ['remove-task'],
+	props: {
+		tasks: {
+			type: Array
+		}
+	},
+	methods: {
+		triggerRemoveTask(index) {
+			this.$emit('remove-task', index)
+		},
+		toggleDone(index) {
+			this.$emit('toggle-done', index)
+		}
+	},
+	template: 
+		`<li
+			v-for="(task,i) in tasks"
+			:id="i"
+			:class="{completed: task.isDone}">
+				<span style="margin-right:2rem;">
+					{{task.description}}
+				</span>
+				<span class="actionBtnCont">
+					<i
+						class="fa-solid fa-check" class="doneBtn"
+						@click="toggleDone(i)"></i>
+
+					<i class="fa-solid fa-trash" @click="triggerRemoveTask(i)" class="deleteBtn"></i>
+				</span>
+		</li>`
+})
+
+app.mount('#app');
+</script>
+
+
+</html>
