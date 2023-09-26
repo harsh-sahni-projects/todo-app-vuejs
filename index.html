@@ -49,6 +49,8 @@ section.main {
 	gap: 0.6rem;
 	margin: 1rem 0 2rem 0;
 }
+
+
 label {
 	user-select: none;
 }
@@ -171,11 +173,6 @@ const app = Vue.createApp({
 		},
 		toggleDone(index) {
 			this.allTasks[index].isDone = !this.allTasks[index].isDone;
-		}
-	},
-	watch: {
-		hideCompletedTasks() {
-			console.log('updated to', this.hideCompletedTasks)
 		}
 	}
 });
