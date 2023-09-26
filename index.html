@@ -23,8 +23,15 @@ h1 {
 	color: white;
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-#inputDiv {
+
+section.main {
 	padding: 2rem;
+	max-width: 1080px;
+	margin: 0 auto;
+}
+
+#inputDiv {
+	/* padding: 2rem; */
 }
 #taskInput {
 	width: 100%;
@@ -35,8 +42,18 @@ h1 {
 	border: 1px solid cornflowerblue;
 	border-radius: 5px;
 }
+
+.checkbox-container {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	margin: 1rem 0 2rem 0;
+}
+label {
+	user-select: none;
+}
+
 ul {
-	padding: 2rem;
 	list-style: none;
 }
 .deleteBtn, .doneBtn {
@@ -82,28 +99,43 @@ i:hover {
 	border-radius: 50%;
 }
 
-
+p.list-empty {
+	color: gray;
+	font-style: italic;
+	margin-top: 2rem;
+}
 
 </style>
 
 <body>
 	<div id="app">
 		<h1>{{heading}}</h1>
-		<div id="inputDiv">
-			<input
-				type="text"
-				v-model="taskInput"
-				id="taskInput"
-				@keyup.enter="addTask" 
-				placeholder="Add task and hit Enter!"/>
-		</div>
-		<ul v-if="allTasks.length > 0">
-			<task-items
-				:tasks="allTasks"
-				@remove-task="removeTask"
-				@toggle-done="toggleDone">
-			</task-items>
-		</ul>
+		<section class="main">
+			<div id="inputDiv">
+				<input
+					type="text"
+					v-model="taskInput"
+					id="taskInput"
+					@keyup.enter="addTask" 
+					placeholder="Add task and hit Enter!"/>
+			</div>
+
+			<base-checkbox
+				v-model="hideCompletedTasks"
+				label="Hide completed tasks"
+				v-if="allTasks.length > 0"
+			>
+			</base-checkbox>
+			
+			<ul v-if="allTasks.length > 0">
+				<task-items
+					:tasks="displayedTasks"
+					@remove-task="removeTask"
+					@toggle-done="toggleDone">
+				</task-items>
+			</ul>
+			<p v-else class="list-empty">Please add at least 1 task </p>
+		</section>
 	</div>	
 </body>
 <script>
@@ -116,7 +148,13 @@ const app = Vue.createApp({
 				{description:'You can mark tasks as done', isDone:false},
 				{description:'And you can also delete tasks', isDone:false}
 			],
-			heading: 'Tasks!'
+			heading: 'Tasks!',
+			hideCompletedTasks: false
+		}
+	},
+	computed: {
+		displayedTasks() {
+			return this.hideCompletedTasks ? this.allTasks.filter(t => !t.isDone) : this.allTasks;
 		}
 	},
 	methods: {
@@ -134,11 +172,39 @@ const app = Vue.createApp({
 		toggleDone(index) {
 			this.allTasks[index].isDone = !this.allTasks[index].isDone;
 		}
+	},
+	watch: {
+		hideCompletedTasks() {
+			console.log('updated to', this.hideCompletedTasks)
+		}
 	}
 });
 
+app.component('base-checkbox', {
+	props: {
+		modelValue: {
+			type: Boolean,
+			default: false
+		},
+		label: {
+			type: String
+		},
+	},
+	template: `
+		<div class="checkbox-container">
+			<input
+				type="checkbox"
+				id="checkbox1"
+				:checked="modelValue"
+				@change="$emit('update:modelValue', !this.modelValue)"
+			>
+			<label for="checkbox1">{{label}}</label>
+		</div>
+	`
+})
+
 app.component('task-items', {
-	emits: ['remove-task'],
+	emits: ['remove-task', 'toggle-done'],
 	props: {
 		tasks: {
 			type: Array
@@ -162,10 +228,12 @@ app.component('task-items', {
 				</span>
 				<span class="actionBtnCont">
 					<i
-						class="fa-solid fa-check" class="doneBtn"
+						class="fa-solid fa-check doneBtn"
 						@click="toggleDone(i)"></i>
 
-					<i class="fa-solid fa-trash" @click="triggerRemoveTask(i)" class="deleteBtn"></i>
+					<i
+						class="fa-solid fa-trash deleteBtn"
+						@click="triggerRemoveTask(i)"></i>
 				</span>
 		</li>`
 })
