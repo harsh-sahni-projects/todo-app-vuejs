@@ -115,6 +115,7 @@ p.list-empty {
 		<section class="main">
 			<div id="inputDiv">
 				<input
+					ref="userInput"
 					type="text"
 					v-model="taskInput"
 					id="taskInput"
@@ -158,6 +159,10 @@ const app = Vue.createApp({
 		displayedTasks() {
 			return this.hideCompletedTasks ? this.allTasks.filter(t => !t.isDone) : this.allTasks;
 		}
+	},
+	mounted() {
+		console.log(this.$refs.userInput)
+		this.$refs.userInput.focus()
 	},
 	methods: {
 		removeTask(index) {
